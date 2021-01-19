@@ -4,17 +4,11 @@ const app = new Vue({
         censusData: null,
         x: 'obesity',
         y: 'poverty',
-        xOptions: [
-            {key: 'poverty', title: 'In Poverty (%)'},
-            {key: 'age', title: 'Age (Median)'},
-            {key: 'income', title: 'Household Income (Median)'}
-        ],
-        yOptions: [
-            {key: 'obesity', title: 'Obese (%)'},
-            {key: 'smokes', title: 'Smokes (%)'},
-            {key: 'healthcare', title: 'Lacks Healthcare (%)'}
-        ],
-        svg: {width: 960, height: 500, top: 20, right: 40, bottom: 80, left: 100}
+        xOptions: {poverty: 'In Poverty (%)', age: 'Age (Median)', income: 'Household Income (Median)'},
+        yOptions: {obesity: 'Obese (%)', smokes: 'Smokes (%)', healthcare: 'Lacks Healthcare (%)'},
+        svg: {width: 960, height: 500, top: 20, right: 40, bottom: 80, left: 100},
+        xAxis: null,
+        yAxis: null
     },
     methods: {
         renderAxes: function () {
@@ -26,24 +20,28 @@ const app = new Vue({
         },
         updateToolTip: function () {
 
+        },
+        xScale: function() {
+            return d3.scaleLinear()
+                .domain([d3.min(this.censusData, state => state[this.x]),
+                    d3.max(this.censusData, state => state[this.x])
+                ])
+                .range([0, this.width]);
+        },
+        yScale: function() {
+            return d3.scaleLinear()
+                .domain([d3.min(this.censusData, state => state[this.y]),
+                    d3.max(this.censusData, state => state[this.y])
+                ])
+                .range([this.height, 0]);
         }
     },
     computed: {
-        width: function() {
+        width: function () {
             return this.svg.width - this.svg.left - this.svg.right
         },
-        height: function() {
+        height: function () {
             return this.svg.height - this.svg.top - this.svg.bottom;
-        },
-        chartGroupTransform: function() {
-            return `translate(${this.svg.left}, ${this.svg.top})`
-        },
-        xScale: function () {
-            return d3.scaleLinear()
-                .domain([d3.min(this.censusData, state[this.x]) * 0.8,
-                    d3.max(this.censusData, state[this.x]) * 1.2
-                ])
-                .range([0, this.width]);
         }
     },
     created: async function () {
@@ -60,6 +58,14 @@ const app = new Vue({
                 healthcare: +state.healthcare
             }
         })
+        d3.select("#xAxis").call(d3.axisBottom(this.xScale));
+        d3.select("#yAxis").call(d3.axisLeft(this.yScale));
+        const chartGroup = d3.select("#chartGroup");
+        const circlesGroup = chartGroup.selectAll("circle")
+            .data(this.censusData)
+            .enter()
+            .append("circle")
+            .attr("cx", d => d)
     }
 })
 

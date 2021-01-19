@@ -22,7 +22,10 @@
         <div class="col-xs-12  col-md-9">
             <div>
                 <svg id="scatter" :width="width" :height="height">
-                    <g id="chartGroup" :transform="chartGroupTransform"></g>
+                    <g id="chartGroup" :transform="'translate(' + svg.left + ', ' + svg.top + ')'">
+                        <g id="xAxis" :transform="'translate(0, ' + svg.height + ')'"></g>
+                        <g id="yAxis"></g>
+                    </g>
                 </svg>
             </div>
         </div>
