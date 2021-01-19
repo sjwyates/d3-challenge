@@ -59,21 +59,33 @@ const app = new Vue({
         data: []
     },
     methods: {
-        xScale: function() {
+        xScale: function () {
 
         },
-        renderAxes: function() {
+        renderAxes: function () {
 
         },
-        renderCircles: function() {
+        renderCircles: function () {
 
         },
-        updateToolTip: function() {
+        updateToolTip: function () {
 
         }
     },
-    created: function () {
-        console.log('selected x: ' + this.selected.x)
+    created: async function () {
+        const data = await d3.csv("./assets/data/data.csv")
+        this.data = data.map(theState => {
+                return {
+                    state: theState.state,
+                    abbr: theState.abbr,
+                    poverty: +theState.poverty,
+                    age: +theState.age,
+                    income: +theState.income,
+                    obesity: +theState.obesity,
+                    smokes: +theState.smokes,
+                    healthcare: +theState.healthcare
+                }
+            })
     }
 })
 
