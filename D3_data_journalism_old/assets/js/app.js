@@ -1,3 +1,5 @@
+
+
 const app = new Vue({
     el: '#app',
     data: {
@@ -21,14 +23,14 @@ const app = new Vue({
         updateToolTip: function () {
 
         },
-        xScale: function() {
+        xScale: function () {
             return d3.scaleLinear()
                 .domain([d3.min(this.censusData, state => state[this.x]),
                     d3.max(this.censusData, state => state[this.x])
                 ])
                 .range([0, this.width]);
         },
-        yScale: function() {
+        yScale: function () {
             return d3.scaleLinear()
                 .domain([d3.min(this.censusData, state => state[this.y]),
                     d3.max(this.censusData, state => state[this.y])
@@ -38,10 +40,16 @@ const app = new Vue({
     },
     computed: {
         width: function () {
-            return this.svg.width - this.svg.left - this.svg.right
+            return this.svg.width - this.svg.left - this.svg.right;
         },
         height: function () {
             return this.svg.height - this.svg.top - this.svg.bottom;
+        },
+        xData: function () {
+            return this.censusData.map(row => row[this.x]);
+        },
+        yData: function () {
+            return this.censusData.map(row => row[this.y]);
         }
     },
     created: async function () {
