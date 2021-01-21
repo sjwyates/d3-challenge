@@ -108,11 +108,16 @@ export default {
       return { xAxis, yAxis };
     },
     circles() {
-      return selectAll('.circle')
-        .data(this.chartData.data)
+      return select('.chart-group')
+        .selectAll('circle')
+        .data(this.chartData)
         .enter()
+        .append('circle')
         .attr('cx', (d) => this.xScale(d.x))
-        .attr('cy', (d) => this.yScale(d.y));
+        .attr('cy', (d) => this.yScale(d.y))
+        .attr('r', 20)
+        .attr('fill', 'blue')
+        .attr('opacity', '.5');
     },
   },
   computed: {
@@ -155,7 +160,7 @@ export default {
   },
   mounted() {
     this.setAxes();
-    // this.circles();
+    this.circles();
   },
   beforeUpdate() {
     selectAll('.tick').remove();
