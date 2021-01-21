@@ -20,93 +20,65 @@ export default {
   data() {
     return {
       xOptions: {
-        poverty: { axisTitle: 'In Poverty (%)', tooltipTitle: 'Poverty', tooltipUnits: ' %' },
-        age: { axisTitle: 'Age (Median)', tooltipTitle: 'Age', tooltipUnits: '' },
-        income: { axisTitle: 'Household Income (Median)', tooltipTitle: 'Income', tooltipUnits: '' },
+        poverty: { axisTitle: 'In Poverty (%)', ttTitle: 'Poverty', ttUnits: ' %' },
+        age: { axisTitle: 'Age (Median)', ttTitle: 'Age', ttUnits: '' },
+        income: { axisTitle: 'Household Income (Median)', ttTitle: 'Income', ttUnits: '' },
       },
       yOptions: {
-        obesity: { axisTitle: 'Obese (%)', tooltipTitle: 'Obesity', tooltipUnits: ' %' },
-        smokes: { axisTitle: 'Smokes (%)', tooltipTitle: 'Smokes', tooltipUnits: ' %' },
-        healthcare: { axisTitle: 'Lacks Healthcare (%)', tooltipTitle: 'Healthcare', tooltipUnits: ' %' },
+        obesity: { axisTitle: 'Obese (%)', ttTitle: 'Obesity', ttUnits: ' %' },
+        smokes: { axisTitle: 'Smokes (%)', ttTitle: 'Smokes', ttUnits: ' %' },
+        healthcare: { axisTitle: 'Lacks Healthcare (%)', ttTitle: 'Healthcare', ttUnits: ' %' },
       },
     };
   },
   methods: {
-    xScale() {
-      return scaleLinear()
+    toolTip() {
+      return tip.default()
+        .attr('class', 'tooltip')
+        .offset([80, -60])
+        .html(function tipText(d) {
+          const xText = `${this.xOptions[this.x].ttTitle}: ${d.x}${this.xOptions[this.x].ttUnits}`;
+          const yText = `${this.xOptions[this.y].ttTitle}: ${d.y}${this.xOptions[this.y].ttUnits}`;
+          return (`${d.state}<hr>${xText}<br>${yText}`);
+        });
+    },
+    generatePlot() {
+      const xScale = scaleLinear()
         .domain([min(this.chartData, (state) => state.x),
           max(this.chartData, (state) => state.x),
         ])
         .range([0, this.width]);
-    },
-    yScale() {
-      return scaleLinear()
+      const yScale = scaleLinear()
         .domain([min(this.chartData, (state) => state.y),
           max(this.chartData, (state) => state.y),
         ])
         .range([this.height, 0]);
-    },
-    renderCircles() {
-
-    },
-    updateToolTip() {
-
-    },
-  },
-  computed: {
-    svgWidth() {
-      return this.svgParams.width - this.svgParams.left - this.svgParams.right;
-    },
-    svgHeight() {
-      return this.svgParams.height - this.svgParams.top - this.svgParams.bottom;
-    },
-    svg() {
-      return select('#scatter')
+      const svg = select('#scatter')
         .append('svg')
         .attr('width', this.svgParams.width)
         .attr('height', this.svgParams.height);
-    },
-    chartGroup() {
-      return this.svg.append('g')
+      const chartGroup = svg.append('g')
         .attr('transform', `translate(${this.svgParams.left}, ${this.svgParams.right})`);
-    },
-    xAxis() {
-      return this.chartGroup.append('g')
-        .classed('axis', true)
-        .attr('transform', `translate(0, ${this.height}`)
-        .call(axisBottom(this.xScale()));
-    },
-    yAxis() {
-      return this.chartGroup.append('g')
-        .classed('axis', true)
-        .call(axisLeft(this.yScale()));
-    },
-    circlesGroup() {
-      const circlesGroup = this.chartGroup.selectAll('circle')
+      const xAxis = chartGroup.append('g')
+        .classed('x-axis', true)
+        .attr('transform', `translate(0, ${this.svgHeight})`)
+        .call(axisBottom(xScale));
+      const yAxis = chartGroup.append('g')
+        .classed('y-axis', true)
+        .call(axisLeft(yScale));
+      const circlesGroup = chartGroup.selectAll('circle')
         .data(this.chartData.data)
         .enter()
         .append('circle')
-        .attr('cx', this.xScale)
-        .attr('cy', this.yScale)
+        .attr('cx', (d) => xScale(d.x))
+        .attr('cy', (d) => yScale(d.y))
         .attr('r', 20)
         .attr('fill', 'blue')
         .attr('opacity', '0.5');
-      const toolTip = tip.default()
-        .attr('class', 'tooltip')
-        .offset([80, -60])
-        .html(function tipText(d) {
-          const xText = `${this.xOptions[this.x].tooltipTitle}: ${d.x}${this.xOptions[this.x].tooltipUnits}`;
-          const yText = `${this.xOptions[this.y].tooltipTitle}: ${d.y}${this.xOptions[this.y].tooltipUnits}`;
-          return (`${d.state}<hr>${xText}<br>${yText}`);
-        });
-      circlesGroup.call(toolTip);
-      return circlesGroup;
-    },
-    xLabelsGroup() {
-      const labelsGroup = this.chartGroup.append('g')
-        .attr('transform', `translate(${this.width / 2}, ${this.height + 20})`);
+      const xLabelsGroup = chartGroup.append('g')
+        .attr('transform', `translate(${this.svgWidth / 2}, ${this.svgHeight + 20})`);
       Array.entries(Object.entries(this.xOptions)).forEach(([index, [key, value]]) => {
-        labelsGroup.append('text')
+        xLabelsGroup.append('text')
           .attr('x', 0)
           .attr('y', (index + 1) * 20)
           .classed('axis-text', true)
@@ -119,15 +91,12 @@ export default {
             }
           });
       });
-      return labelsGroup;
-    },
-    yLabelsGroup() {
-      const labelsGroup = this.chartGroup.append('g');
+      const yLabelsGroup = chartGroup.append('g');
       Array.entries(Object.entries(this.yOptions)).forEach(([index, [key, value]]) => {
-        labelsGroup.append('text')
+        yLabelsGroup.append('text')
           .attr('transform', 'rotate(-90)')
           .attr('y', 0 - this.svgParams.left)
-          .attr('x', 0 - this.height / 2)
+          .attr('x', 0 - this.svgHeight / 2)
           .attr('dy', `${index + 1}em`)
           .classed('axis-text', true)
           .attr('value', key)
@@ -139,8 +108,21 @@ export default {
             }
           });
       });
-      return labelsGroup;
+      return {
+        svg, chartGroup, xAxis, yAxis, circlesGroup, xLabelsGroup, yLabelsGroup,
+      };
     },
+  },
+  computed: {
+    svgWidth() {
+      return this.svgParams.width - this.svgParams.left - this.svgParams.right;
+    },
+    svgHeight() {
+      return this.svgParams.height - this.svgParams.top - this.svgParams.bottom;
+    },
+  },
+  mounted() {
+    this.generatePlot();
   },
 };
 </script>
