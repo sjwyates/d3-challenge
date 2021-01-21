@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <SVGContainer :svgParams="svgParams" :chart-data="chartData" :x="x" :y="y"/>
+    <SVGContainer :svgParams="svgParams" :census-data="censusData"/>
   </div>
 </template>
 
@@ -19,26 +19,15 @@ export default {
       y: 'obesity',
       censusData: [],
       svgParams: {
-        width: 960, height: 500, top: 20, right: 40, bottom: 80, left: 100,
+        width: 1000, height: 560, top: 20, right: 40, bottom: 140, left: 100,
       },
       error: undefined,
     };
   },
-  computed: {
-    chartData() {
-      return this.censusData.map((state) => ({
-        state: state.state,
-        abbr: state.abbr,
-        x: +state[this.x],
-        y: +state[this.y],
-      }));
-    },
-  },
   methods: {
     async fetchCSV() {
       try {
-        const data = await csv('http://localhost:8080/data.csv');
-        this.censusData = data;
+        this.censusData = await csv('http://localhost:8080/data.csv');
       } catch (err) {
         this.error = err;
       }

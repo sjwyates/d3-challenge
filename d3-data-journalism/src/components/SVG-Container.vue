@@ -1,34 +1,85 @@
 <template>
-  <div id="scatter" class="svg-container"></div>
+  <div class="svg-container">
+    <svg id="svg" :width="svgParams.width" :height="svgParams.height">
+      <g class="chart-group" :transform="transform.chartGroup">
+<!--        <circle v-for="state in chartData"-->
+<!--                :key="state.abbr + '-c'"-->
+<!--                class="circle"-->
+<!--                r="20"-->
+<!--                fill="blue"-->
+<!--                opacity="0.5">-->
+<!--        </circle>-->
+        <g class="x-label-group"
+            :transform="transform.xLabels">
+          <text v-for="(option, index) in xOptions"
+                :key="option.name"
+                class="axis-text"
+                :class="{active: x === option.name}"
+                @click="x = option.name"
+                text-anchor="middle"
+                x="0"
+                :y="(index + 1) * 20">
+            {{ option.axisTitle }}
+          </text>
+        </g>
+        <g class="y-label-group" :style="cssVars">
+          <text v-for="(option, index) in yOptions"
+                :key="option.name"
+                class="axis-text"
+                :class="{active: y === option.name}"
+                @click="y = option.name"
+                transform="rotate(-90)"
+                text-anchor="middle"
+                :x="0 - svgHeight / 2"
+                :y="0 - svgParams.left"
+                :dy="index + 2 + 'em'">
+            {{ option.axisTitle }}
+          </text>
+        </g>
+      </g>
+    </svg>
+  </div>
 </template>
 
 <script>
-import { select } from 'd3-selection';
+import { select, selectAll } from 'd3-selection';
 import { scaleLinear } from 'd3-scale';
-import { min, max } from 'd3-array';
-import { axisLeft, axisBottom } from 'd3-axis';
+import { extent } from 'd3-array';
+import { axisBottom, axisLeft } from 'd3-axis';
 import * as tip from 'd3-tip';
 
 export default {
   name: 'SVGContainer',
   props: {
-    chartData: Array,
+    censusData: Array,
     svgParams: Object,
-    x: String,
-    y: String,
   },
   data() {
     return {
-      xOptions: {
-        poverty: { axisTitle: 'In Poverty (%)', ttTitle: 'Poverty', ttUnits: ' %' },
-        age: { axisTitle: 'Age (Median)', ttTitle: 'Age', ttUnits: '' },
-        income: { axisTitle: 'Household Income (Median)', ttTitle: 'Income', ttUnits: '' },
-      },
-      yOptions: {
-        obesity: { axisTitle: 'Obese (%)', ttTitle: 'Obesity', ttUnits: ' %' },
-        smokes: { axisTitle: 'Smokes (%)', ttTitle: 'Smokes', ttUnits: ' %' },
-        healthcare: { axisTitle: 'Lacks Healthcare (%)', ttTitle: 'Healthcare', ttUnits: ' %' },
-      },
+      x: 'poverty',
+      y: 'obesity',
+      xOptions: [
+        {
+          name: 'poverty', axisTitle: 'In Poverty (%)', ttTitle: 'Poverty', ttUnits: ' %',
+        },
+        {
+          name: 'age', axisTitle: 'Age (Median)', ttTitle: 'Age', ttUnits: '',
+        },
+        {
+          name: 'income', axisTitle: 'Household Income (Median)', ttTitle: 'Income', ttUnits: '',
+        },
+      ],
+      yOptions: [
+        {
+          name: 'obesity', axisTitle: 'Obese (%)', ttTitle: 'Obesity', ttUnits: ' %',
+        },
+        {
+          name: 'smokes', axisTitle: 'Smokes (%)', ttTitle: 'Smokes', ttUnits: ' %',
+        },
+        {
+          name: 'healthcare', axisTitle: 'Lacks Healthcare (%)', ttTitle: 'Healthcare', ttUnits: ' %',
+        },
+      ],
     };
   },
   methods: {
@@ -42,91 +93,88 @@ export default {
           return (`${d.state}<hr>${xText}<br>${yText}`);
         });
     },
-    generatePlot() {
-      const xScale = scaleLinear()
-        .domain([min(this.chartData, (state) => state.x),
-          max(this.chartData, (state) => state.x),
-        ])
-        .range([0, this.width]);
-      const yScale = scaleLinear()
-        .domain([min(this.chartData, (state) => state.y),
-          max(this.chartData, (state) => state.y),
-        ])
-        .range([this.height, 0]);
-      const svg = select('#scatter')
-        .append('svg')
-        .attr('width', this.svgParams.width)
-        .attr('height', this.svgParams.height);
-      const chartGroup = svg.append('g')
-        .attr('transform', `translate(${this.svgParams.left}, ${this.svgParams.right})`);
-      const xAxis = chartGroup.append('g')
+    setAxes() {
+      const bottomAxis = axisBottom(this.xScale);
+      const leftAxis = axisLeft(this.yScale);
+      const xAxis = select('.chart-group')
+        .append('g')
         .classed('x-axis', true)
         .attr('transform', `translate(0, ${this.svgHeight})`)
-        .call(axisBottom(xScale));
-      const yAxis = chartGroup.append('g')
+        .call(bottomAxis);
+      const yAxis = select('.chart-group')
+        .append('g')
         .classed('y-axis', true)
-        .call(axisLeft(yScale));
-      const circlesGroup = chartGroup.selectAll('circle')
+        .call(leftAxis);
+      return { xAxis, yAxis };
+    },
+    circles() {
+      return selectAll('.circle')
         .data(this.chartData.data)
         .enter()
-        .append('circle')
-        .attr('cx', (d) => xScale(d.x))
-        .attr('cy', (d) => yScale(d.y))
-        .attr('r', 20)
-        .attr('fill', 'blue')
-        .attr('opacity', '0.5');
-      const xLabelsGroup = chartGroup.append('g')
-        .attr('transform', `translate(${this.svgWidth / 2}, ${this.svgHeight + 20})`);
-      Array.entries(Object.entries(this.xOptions)).forEach(([index, [key, value]]) => {
-        xLabelsGroup.append('text')
-          .attr('x', 0)
-          .attr('y', (index + 1) * 20)
-          .classed('axis-text', true)
-          .attr('value', key)
-          .text(value.title)
-          .on('click', function shouldUpdate() {
-            const nodeValue = select(this).attr('value');
-            if (nodeValue !== this.x) {
-              this.x = nodeValue;
-            }
-          });
-      });
-      const yLabelsGroup = chartGroup.append('g');
-      Array.entries(Object.entries(this.yOptions)).forEach(([index, [key, value]]) => {
-        yLabelsGroup.append('text')
-          .attr('transform', 'rotate(-90)')
-          .attr('y', 0 - this.svgParams.left)
-          .attr('x', 0 - this.svgHeight / 2)
-          .attr('dy', `${index + 1}em`)
-          .classed('axis-text', true)
-          .attr('value', key)
-          .text(value.title)
-          .on('click', function shouldUpdate() {
-            const nodeValue = select(this).attr('value');
-            if (nodeValue !== this.y) {
-              this.y = nodeValue;
-            }
-          });
-      });
-      return {
-        svg, chartGroup, xAxis, yAxis, circlesGroup, xLabelsGroup, yLabelsGroup,
-      };
+        .attr('cx', (d) => this.xScale(d.x))
+        .attr('cy', (d) => this.yScale(d.y));
     },
   },
   computed: {
+    chartData() {
+      return this.censusData.map((state) => ({
+        state: state.state,
+        abbr: state.abbr,
+        x: +state[this.x],
+        y: +state[this.y],
+      }));
+    },
     svgWidth() {
       return this.svgParams.width - this.svgParams.left - this.svgParams.right;
     },
     svgHeight() {
       return this.svgParams.height - this.svgParams.top - this.svgParams.bottom;
     },
+    xScale() {
+      return scaleLinear()
+        .domain(extent(this.chartData, (d) => d.x))
+        .range([0, this.svgWidth]);
+    },
+    yScale() {
+      return scaleLinear()
+        .domain(extent(this.chartData, (d) => d.y))
+        .range([this.svgHeight, 0]);
+    },
+    transform() {
+      return {
+        chartGroup: `translate(${this.svgParams.left}, ${this.svgParams.right})`,
+        xLabels: `translate(${this.svgWidth / 2}, ${this.svgHeight + 30})`,
+      };
+    },
+    cssVars() {
+      return {
+        '--svg-width': `${this.svgWidth}px`,
+        '--svg-height': `${this.svgHeight}px`,
+      };
+    },
   },
   mounted() {
-    this.generatePlot();
+    this.setAxes();
+    // this.circles();
+  },
+  beforeUpdate() {
+    selectAll('.tick').remove();
+    selectAll('.tick').remove();
+  },
+  updated() {
+    this.setAxes();
+    // this.circles();
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+.axis-text {
+  cursor: pointer;
+  font-weight: lighter;
+}
+.active {
+  font-weight: bold;
+}
 </style>
