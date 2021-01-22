@@ -66,7 +66,7 @@ function renderCircles(circlesGroup, circleLabelsGroup, scale, axis) {
         .attr(axis, d => scale(d[selected[axis]]));
 }
 
-function updateToolTip(circlesGroup) {
+function updateToolTip(circlesGroup, circleLabelsGroup) {
     const ttLabels = {
         poverty: ['Poverty: ', '%'],
         age: ['Median Age: ', ''],
@@ -92,7 +92,15 @@ function updateToolTip(circlesGroup) {
         .on('mouseout', function(data) {
             toolTip.hide(data)
         });
-    return circlesGroup;
+    circleLabelsGroup
+        .call(toolTip);
+    circleLabelsGroup
+        .on('mouseover', function(data) {
+            toolTip.show(data, this)
+        })
+        .on('mouseout', function(data) {
+            toolTip.hide(data)
+        });
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +142,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .append('circle')
         .attr('cx', d => xScale(d[selected.x]))
         .attr('cy', d => yScale(d[selected.y]))
-        .attr('r', 10)
+        .attr('r', 15)
         .classed('stateCircle', true);
 
     const circleLabelsGroup = chartGroup.selectAll('text')
@@ -143,11 +151,13 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .append('text')
         .attr('x', d => xScale(d[selected.x]))
         .attr('y', d => yScale(d[selected.y]))
+        .classed('stateText', true)
         .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'middle')
         .text(d => d.abbr);
 
     // Step 5: Update tooltip
-    updateToolTip(circlesGroup);
+    updateToolTip(circlesGroup, circleLabelsGroup);
 
     // Step 6: Initialize the axis labels
     // 6a: Create groups to hold them
@@ -166,6 +176,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])
                 .attr('id', `${label[0]}Label`)
+                .classed('aText', true)
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
@@ -181,6 +192,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])
                 .attr('id', `${label[0]}Label`)
+                .classed('aText', true)
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
