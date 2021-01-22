@@ -57,17 +57,20 @@ function renderAxis(axis, axisObj, scale) {
         .call(axis === 'x' ? d3.axisBottom(scale) : d3.axisLeft(scale));
 }
 
-function renderCircles(circlesGroup, scale, axis) {
-    return circlesGroup.transition()
+function renderCircles(circlesGroup, circleLabelsGroup, scale, axis) {
+    circlesGroup.transition()
         .duration(500)
         .attr(`c${axis}`, d => scale(d[selected[axis]]));
+    circleLabelsGroup.transition()
+        .duration(500)
+        .attr(axis, d => scale(d[selected[axis]]));
 }
 
 function updateToolTip(circlesGroup) {
     const ttLabels = {
         poverty: ['Poverty: ', '%'],
-        age: ['Age: ', ''],
-        income: ['Income: $', ''],
+        age: ['Median Age: ', ''],
+        income: ['Median Income: $', ''],
         obesity: ['Obesity: ', '%'],
         smokes: ['Smokes: ', '%'],
         healthcare: ['Lacks Healthcare: ', '%'],
@@ -76,7 +79,7 @@ function updateToolTip(circlesGroup) {
         .attr('class', 'd3-tip')
         .offset([80, -60])
         .html((d) => {
-            return `${d.state}<br>
+            return `<strong>${d.state}</strong><br>
             ${ttLabels[selected.x][0]}${d[selected.x]}${ttLabels[selected.x][1]}<br>
             ${ttLabels[selected.y][0]}${d[selected.y]}${ttLabels[selected.y][1]}`
         });
@@ -134,18 +137,27 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .attr('r', 10)
         .classed('stateCircle', true);
 
-    // Step 4: Update tooltip
+    const circleLabelsGroup = chartGroup.selectAll('text')
+        .data(chartData)
+        .enter()
+        .append('text')
+        .attr('x', d => xScale(d[selected.x]))
+        .attr('y', d => yScale(d[selected.y]))
+        .attr('text-anchor', 'middle')
+        .text(d => d.abbr);
+
+    // Step 5: Update tooltip
     updateToolTip(circlesGroup);
 
-    // Step 5: Initialize the axis labels
-    // 5a: Create groups to hold them
+    // Step 6: Initialize the axis labels
+    // 6a: Create groups to hold them
     const xLabelsGroup = chartGroup.append('g')
         .attr('transform', `translate(${svgParams.iWidth / 2}, ${svgParams.iHeight + 20})`)
         .classed('x-label-group', true);
     const yLabelsGroup = chartGroup.append('g')
         .attr('transform', `translate(${0 - svgParams.mLeft}, ${svgParams.iHeight / 2})`)
         .classed('y-label-group', true);
-    // 5b: Iterate over "lists" of "tuples" to create labels
+    // 6b: Iterate over "lists" of "tuples" to create labels
     [['poverty', 'In Poverty (%)'], ['age', 'Age (Median)'], ['income', 'Income (Median)']]
         .forEach((label, index) => {
             xLabelsGroup.append('text')
@@ -175,19 +187,19 @@ d3.csv('./assets/data/data.csv').then((data) => {
                 .on('click', () => clickHandler('y', label[0]));
         });
 
-    // Step 6: Create the callback function for the click events (generic for x and y)
+    // Step 7: Create the callback function for the click events (generic for x and y)
     function clickHandler(axis, value) {
         if (selected[axis] !== value) {
             selected[axis] = value;
             if (axis === 'x') {
                 xScale = linearScale('x', chartData);
                 renderAxis('x', xAxis, xScale);
-                renderCircles(circlesGroup, xScale, axis);
+                renderCircles(circlesGroup, circleLabelsGroup, xScale, axis);
             }
             if (axis === 'y') {
                 yScale = linearScale('y', chartData);
                 renderAxis('y', yAxis, yScale);
-                renderCircles(circlesGroup, yScale, axis);
+                renderCircles(circlesGroup, circleLabelsGroup, yScale, axis);
             }
             updateToolTip(circlesGroup);
             chartGroup.select(`.${axis}-label-group`)
