@@ -41,9 +41,10 @@ const selected = {
 // -----------------------------------------------------------------------------
 
 function linearScale(axis, data) {
+    const offset = axis === 'x' ? 0.05 : 0.2;
     return d3.scaleLinear()
-        .domain([d3.min(data, d => d[selected[axis]]) * 0.95,
-            d3.max(data, d => d[selected[axis]]) * 1.05])
+        .domain([d3.min(data, d => d[selected[axis]]) * (1 - offset),
+            d3.max(data, d => d[selected[axis]]) * (1 + offset)])
         .range(axis === 'x' ? [0, svgParams.iWidth] : [svgParams.iHeight, 0]);
 }
 
@@ -58,9 +59,14 @@ function renderAxis(axis, axisObj, scale) {
 }
 
 function renderCircles(circlesGroup, scale, axis) {
-    circlesGroup.transition()
+    circlesGroup.selectAll('circle')
+        .transition()
         .duration(500)
         .attr(`c${axis}`, d => scale(d[selected[axis]]));
+    circlesGroup.selectAll('text')
+        .transition()
+        .duration(500)
+        .attr(axis, d => scale(d[selected[axis]]));
 }
 
 function updateToolTip(circlesGroup) {
