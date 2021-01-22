@@ -101,9 +101,16 @@ export default {
       const circlesGroup = select('.chart-group')
         .selectAll('circle')
         .data(this.chartData)
+=======
+      return { xAxis, yAxis };
+    },
+    circles() {
+      return selectAll('.circle')
+        .data(this.chartData.data)
+>>>>>>> parent of 7e13b8f (we have circles)
         .enter()
-        .append('circle')
         .attr('cx', (d) => this.xScale(d.x))
+<<<<<<< HEAD
         .attr('cy', (d) => this.yScale(d.y))
         .attr('r', 10)
         .attr('fill', '#89bdd3')
@@ -191,6 +198,9 @@ export default {
             }
           });
       });
+=======
+        .attr('cy', (d) => this.yScale(d.y));
+>>>>>>> parent of 7e13b8f (we have circles)
     },
   },
   computed: {
@@ -234,7 +244,20 @@ export default {
     },
   },
   mounted() {
+<<<<<<< HEAD
     this.axes = this.init();
+=======
+    this.setAxes();
+    // this.circles();
+  },
+  beforeUpdate() {
+    selectAll('.tick').remove();
+    selectAll('.tick').remove();
+  },
+  updated() {
+    this.setAxes();
+    // this.circles();
+>>>>>>> parent of 7e13b8f (we have circles)
   },
 };
 </script>

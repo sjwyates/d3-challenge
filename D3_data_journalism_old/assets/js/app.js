@@ -1,79 +1,78 @@
+const svgParams = {
+    tWidth: 960,
+    tHeight: 500,
+    mTop: 20,
+    mRight: 40,
+    mBottom: 140,
+    mLeft: 120,
+};
+
+svgParams.iWidth = svgParams.tWidth - svgParams.mRight - svgParams.mLeft;
+svgParams.iHeight = svgParams.tHeight - svgParams.mTop - svgParams.mBottom;
+
+const svg = d3
+    .select("#scatter")
+    .append("svg")
+    .attr("width", svg.tWidth)
+    .attr("height", svg.tHeight);
+
+const chartGroup = svg.append("g")
+    .attr("transform", `translate(${svgParams.mLeft}, ${svgParams.mTop})`);
+
+const currentAxes = {
+    x: 'poverty',
+    y: 'obesity',
+};
+
+const axisLabels = {
+    poverty: 'In Poverty (%)',
+    age: 'Age (Median)',
+    income: 'Income (Median)',
+    obesity: 'Obese (%)',
+    smokes: 'Smokes (%)',
+    healthcare: 'Lacks Healthcare (%)',
+};
+
+const toolTipLabels = {
+    poverty: 'In Poverty (%)',
+    age: 'Age (Median)',
+    income: 'Income (Median)',
+    obesity: 'Obese (%)',
+    smokes: 'Smokes (%)',
+    healthcare: 'Lacks Healthcare (%)',
+}
+
+function xScale(data) {
+    return d3.scaleLinear()
+        .domain([d3.min(data, d => d[currentAxes.x]) * 0.95,
+            d3.max(data, d => d[currentAxes.x]) * 1.05])
+}
+
+function yScale(data) {
+    return d3.scaleLinear()
+        .domain([d3.min(data, d => d[currentAxes.y]) * 0.95,
+            d3.max(data, d => d[currentAxes.y]) * 1.05])
+}
+
+function renderXAxis(xAxis) {
+    const bottomAxis = d3.axisBottom(currentAxes.x);
+    return xAxis.transition()
+        .duration(1000)
+        .call(bottomAxis);
+}
+
+function renderYAxis(yAxis) {
+    const leftAxis = d3.axisLeft(currentAxes.y);
+    return yAxis.transition()
+        .duration(1000)
+        .call(leftAxis);
+}
+
+function renderCircles(circlesGroup) {
 
 
-const app = new Vue({
-    el: '#app',
-    data: {
-        censusData: null,
-        x: 'obesity',
-        y: 'poverty',
-        xOptions: {poverty: 'In Poverty (%)', age: 'Age (Median)', income: 'Household Income (Median)'},
-        yOptions: {obesity: 'Obese (%)', smokes: 'Smokes (%)', healthcare: 'Lacks Healthcare (%)'},
-        svg: {width: 960, height: 500, top: 20, right: 40, bottom: 80, left: 100},
-        xAxis: null,
-        yAxis: null
-    },
-    methods: {
-        renderAxes: function () {
-            const bottomAxis = d3.axisBottom(this.x);
+}
 
-        },
-        renderCircles: function () {
+function updateToolTip(circlesGroup) {
 
-        },
-        updateToolTip: function () {
-
-        },
-        xScale: function () {
-            return d3.scaleLinear()
-                .domain([d3.min(this.censusData, state => state[this.x]),
-                    d3.max(this.censusData, state => state[this.x])
-                ])
-                .range([0, this.width]);
-        },
-        yScale: function () {
-            return d3.scaleLinear()
-                .domain([d3.min(this.censusData, state => state[this.y]),
-                    d3.max(this.censusData, state => state[this.y])
-                ])
-                .range([this.height, 0]);
-        }
-    },
-    computed: {
-        width: function () {
-            return this.svg.width - this.svg.left - this.svg.right;
-        },
-        height: function () {
-            return this.svg.height - this.svg.top - this.svg.bottom;
-        },
-        xData: function () {
-            return this.censusData.map(row => row[this.x]);
-        },
-        yData: function () {
-            return this.censusData.map(row => row[this.y]);
-        }
-    },
-    created: async function () {
-        const res = await d3.csv("./assets/data/data.csv")
-        this.censusData = res.map(state => {
-            return {
-                state: state.state,
-                abbr: state.abbr,
-                poverty: +state.poverty,
-                age: +state.age,
-                income: +state.income,
-                obesity: +state.obesity,
-                smokes: +state.smokes,
-                healthcare: +state.healthcare
-            }
-        })
-        d3.select("#xAxis").call(d3.axisBottom(this.xScale));
-        d3.select("#yAxis").call(d3.axisLeft(this.yScale));
-        const chartGroup = d3.select("#chartGroup");
-        const circlesGroup = chartGroup.selectAll("circle")
-            .data(this.censusData)
-            .enter()
-            .append("circle")
-            .attr("cx", d => d)
-    }
-})
-
+}

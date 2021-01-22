@@ -20,13 +20,7 @@
     </div>
     <div class="row">
         <div class="col-xs-12  col-md-9">
-            <div>
-                <svg id="scatter" :width="width" :height="height">
-                    <g id="chartGroup" :transform="'translate(' + svg.left + ', ' + svg.top + ')'">
-                        <g id="xAxis" :transform="'translate(0, ' + svg.height + ')'"></g>
-                        <g id="yAxis"></g>
-                    </g>
-                </svg>
+            <div id="scatter">
             </div>
         </div>
     </div>
@@ -55,8 +49,6 @@
         crossorigin="anonymous"></script>
 <!--<script src="https://d3js.org/d3.v5.min.js"></script>-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
-<!--added vue to help with state management for the bonus-->
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
 
 <script type="module" src="assets/js/app.js"></script>
 
