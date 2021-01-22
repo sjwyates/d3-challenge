@@ -3,12 +3,12 @@
 // -----------------------------------------------------------------------------
 
 const svgParams = {
-    tWidth: 960,
+    tWidth: window.innerWidth * 0.95,
     tHeight: 500,
     mTop: 40,
-    mRight: 0,
+    mRight: window.innerWidth * 0.1,
     mBottom: 100,
-    mLeft: 100,
+    mLeft: window.innerWidth * 0.1,
 };
 
 svgParams.iWidth = svgParams.tWidth - svgParams.mRight - svgParams.mLeft;
