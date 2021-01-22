@@ -78,8 +78,9 @@ function updateToolTip(circlesGroup) {
         .html((d) => `<h3>${d.state}</h3><hr>
             <h4>${ttLabels[selected.x][0]}${d[selected.x]}${ttLabels[selected.x][1]}</h4>
             <h4>${ttLabels[selected.y][0]}${d[selected.y]}${ttLabels[selected.y][1]}</h4>`);
-    return circlesGroup
-        .call(toolTip)
+    circlesGroup
+        .call(toolTip);
+    circlesGroup
         .on('mouseover', (data) => toolTip.show(data))
         .on('mouseout', (data) => toolTip.hide(data));
 }
@@ -88,7 +89,7 @@ function updateToolTip(circlesGroup) {
 // Fetch CSV, do initial chart build
 // -----------------------------------------------------------------------------
 
-d3.csv('../data/data.csv').then((data) => {
+d3.csv('./assets/data/data.csv').then((data) => {
 
     // Step 1: Slim down and clean the data
     const chartData = data.map(row => {
@@ -109,7 +110,7 @@ d3.csv('../data/data.csv').then((data) => {
     let xScale = linearScale('x', chartData);
     let xAxis = chartGroup.append('g')
         .classed('x-axis', true)
-        .attr('transform', `translate(0, ${svgParams.iHeight}`)
+        .attr('transform', `translate(0, ${svgParams.iHeight})`)
         .call(d3.axisBottom(xScale));
     let yScale = linearScale('y', chartData);
     let yAxis = chartGroup.append('g')
@@ -117,17 +118,17 @@ d3.csv('../data/data.csv').then((data) => {
         .call(d3.axisLeft(yScale));
 
     // Step 3: Initialize the circles
-    let circlesGroup = chartGroup.selectAll('circle')
-        .data(chartData)
-        .enter()
-        .append('circle')
-        .attr('cx', d => xScale(d[selected.x]))
-        .attr('cy', d => yScale(d[selected.y]))
-        .attr('r', 5)
-        .classed('stateCircle', true);
-
-    // Step 4: Update tooltip
-    circlesGroup = updateToolTip(circlesGroup);
+    // let circlesGroup = chartGroup.selectAll('circle')
+    //     .data(chartData)
+    //     .enter()
+    //     .append('circle')
+    //     .attr('cx', d => linearScale('x', d))
+    //     .attr('cy', d => linearScale('y', d))
+    //     .attr('r', 5)
+    //     .classed('stateCircle', true);
+    //
+    // // Step 4: Update tooltip
+    // circlesGroup = updateToolTip(circlesGroup);
 
     // Step 5: Initialize the axis labels
     // 5a: Create groups to hold them
@@ -135,7 +136,7 @@ d3.csv('../data/data.csv').then((data) => {
         .attr('transform', `translate(${svgParams.iWidth / 2}, ${svgParams.iHeight + 20})`)
         .classed('x-label-group', true);
     const yLabelsGroup = chartGroup.append('g')
-        .attr('transform', `translate(${0 - svgParams.left}, ${svgParams.iHeight / 2}`)
+        .attr('transform', `translate(${0 - svgParams.mLeft}, ${svgParams.iHeight / 2})`)
         .classed('y-label-group', true);
     // 5b: Iterate over "lists" of "tuples" to create labels
     [['poverty', 'In Poverty (%)'], ['age', 'Age (Median)'], ['income', 'Income (Median)']]
@@ -148,19 +149,21 @@ d3.csv('../data/data.csv').then((data) => {
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
-                .on('click', clickHandler('x', value));
+                // .on('click', clickHandler('x', label[0]));
         });
     [['obesity', 'Obese (%)'], ['smokes', 'Smokes (%)'], ['healthcare', 'Lacks Healthcare (%)']]
         .forEach((label, index) => {
             yLabelsGroup.append('text')
-                .attr('x', (index + 1) * 20)
+                .attr('x', 0)
                 .attr('y', 0)
+                .attr('dy', `${index + 2}em`)
+                .attr('transform', 'rotate(-90)')
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
-                .on('click', clickHandler('y', value));
+                // .on('click', clickHandler('y', label[0]));
         });
 
     // Step 6: Create the callback function for the click events (generic for x and y)
