@@ -42,6 +42,11 @@
   margin: 0;
 }
 
+.chart-title {
+  font-size: 1.3em;
+  font-weight: bolder;
+}
+
 .d3-tip {
   padding: 6px;
   font-size: 12px;

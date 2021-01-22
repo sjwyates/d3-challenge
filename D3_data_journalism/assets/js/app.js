@@ -5,10 +5,10 @@
 const svgParams = {
     tWidth: 960,
     tHeight: 500,
-    mTop: 20,
-    mRight: 40,
-    mBottom: 140,
-    mLeft: 120,
+    mTop: 40,
+    mRight: 0,
+    mBottom: 100,
+    mLeft: 100,
 };
 
 svgParams.iWidth = svgParams.tWidth - svgParams.mRight - svgParams.mLeft;
@@ -26,6 +26,12 @@ const svg = d3
 
 const chartGroup = svg.append('g')
     .attr('transform', `translate(${svgParams.mLeft}, ${svgParams.mTop})`);
+
+svg.append('text')
+    .attr('transform', `translate(${svgParams.iWidth / 2 + svgParams.mLeft}, ${svgParams.mTop / 2})`)
+    .attr('text-anchor', 'middle')
+    .classed('chart-title', true)
+    .text('Correlations');
 
 // -----------------------------------------------------------------------------
 // State management
@@ -182,7 +188,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
             yLabelsGroup.append('text')
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('dy', `${index + 2}em`)
+                .attr('dy', `${index + 1}em`)
                 .attr('transform', 'rotate(-90)')
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])

@@ -12,23 +12,37 @@
 </head>
 
 <body>
-<div id="app" class="container">
-    <div class="row">
-        <div class="col-xs-12 col-md-12">
-            <h1>D3Times</h1>
-        </div>
+<div id="app" class="container-fluid">
+    <div class="jumbotron">
+        <h1 class="title">D3 Demographics</h1>
+        <p class="lead">Creating dynamic data visualizations to examine trends</p>
     </div>
-    <div class="row">
-        <div class="col-xs-12  col-md-9">
-            <div id="scatter">
-            </div>
-        </div>
+    <div class="container my-5">
+        <div id="scatter" class="iframeContainer"></div>
     </div>
-    <div class="row">
+    <div class="container">
         <div class="col-xs-12  col-md-9">
             <div class="article">
-                <h2>Correlations Discovered Between Health Risks and Age, Income</h2>
-                <p></p>
+                <h2>Correlations Discovered</h2>
+                <hr>
+                <h3>Healthcare and Poverty</h3>
+                <p>As you would expect, states with higher poverty levels have higher uninsured rates. This is
+                    particularly pronounced in the Deep South and the Southwest. Meanwhile, only 4.6% of Massachusetts
+                    residents are uninsured, by far the lowest of any state. That may be due to the implementation of
+                    "RomneyCare" in 2006. (This dataset is from 2014, when its nationwide cousin "ObamaCare" had only
+                    just been fully implemented.)</p>
+                <h3>Obesity and Income</h3>
+                <p>The low-income states in the Deep South and Mountain South also have the highest levels of obesity,
+                    followed by a cluster of states in the Midwest. Coastal states tend to have higher median income and
+                    lower obesity, but the state with slimmest population is landlocked: Coloradoans are famously
+                    outdoorsy, which probably explains their outlier status.</p>
+                <h3>Age and Smoking</h3>
+                <p>The correlations here are fairly week, but it's notable that the notoriously vice-averse citizens of
+                    Utah have by far the lowest smoking rates and median age. The Mountain South, which trends
+                    relatively older, has the highest smoking rates, with West Virginia leading the pack (no pun
+                    intended). Somewhat surprising is that North Carolina, home to Winston-Salem, bucks this trend.
+                    Perhaps higher rates in its Appalachian west are offset by lower rates in its major metropolis
+                    (Charlotte) and the Research Triangle.</p>
             </div>
         </div>
     </div>
