@@ -21,8 +21,8 @@ svgParams.iHeight = svgParams.tHeight - svgParams.mTop - svgParams.mBottom;
 const svg = d3
     .select('#scatter')
     .append('svg')
-    .attr('width', svg.tWidth)
-    .attr('height', svg.tHeight);
+    .attr('width', svgParams.tWidth)
+    .attr('height', svgParams.tHeight);
 
 const chartGroup = svg.append('g')
     .attr('transform', `translate(${svgParams.mLeft}, ${svgParams.mTop})`);
@@ -132,9 +132,11 @@ d3.csv('../data/data.csv').then((data) => {
     // Step 5: Initialize the axis labels
     // 5a: Create groups to hold them
     const xLabelsGroup = chartGroup.append('g')
-        .attr('transform', `translate(${svgParams.iWidth / 2}, ${svgParams.iHeight + 20})`);
+        .attr('transform', `translate(${svgParams.iWidth / 2}, ${svgParams.iHeight + 20})`)
+        .classed('x-label-group', true);
     const yLabelsGroup = chartGroup.append('g')
-        .attr('transform', `translate(${0 - svgParams.left}, ${svgParams.iHeight / 2}`);
+        .attr('transform', `translate(${0 - svgParams.left}, ${svgParams.iHeight / 2}`)
+        .classed('y-label-group', true);
     // 5b: Iterate over "lists" of "tuples" to create labels
     [['poverty', 'In Poverty (%)'], ['age', 'Age (Median)'], ['income', 'Income (Median)']]
         .forEach((label, index) => {
@@ -146,6 +148,7 @@ d3.csv('../data/data.csv').then((data) => {
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
+                .on('click', clickHandler('x', value));
         });
     [['obesity', 'Obese (%)'], ['smokes', 'Smokes (%)'], ['healthcare', 'Lacks Healthcare (%)']]
         .forEach((label, index) => {
@@ -157,11 +160,11 @@ d3.csv('../data/data.csv').then((data) => {
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
+                .on('click', clickHandler('y', value));
         });
 
     // Step 6: Create the callback function for the click events (generic for x and y)
-    function clickHandler(element, axis) {
-        const value = d3.select(element).attr('value');
+    function clickHandler(axis, value) {
         if (selected[axis] !== value) {
             selected[axis] = value;
             if (axis === 'x') {
@@ -174,7 +177,13 @@ d3.csv('../data/data.csv').then((data) => {
             }
             circlesGroup = renderCircles(circlesGroup, axis);
             circlesGroup = updateToolTip(circlesGroup);
-
+            chartGroup.select(`.${axis}-label-group`)
+                .selectAll('text')
+                .classed('active', false)
+                .classed('inactive', true);
+            chartGroup.select(`#${value}`)
+                .classed('active', true)
+                .classed('inactive', false);
         }
     }
 })
