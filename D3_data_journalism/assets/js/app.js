@@ -57,10 +57,10 @@ function renderAxis(axis, axisObj, scale) {
         .call(axis === 'x' ? d3.axisBottom(scale) : d3.axisLeft(scale));
 }
 
-function renderCircles(circlesGroup, axis) {
+function renderCircles(circlesGroup, scale, axis) {
     return circlesGroup.transition()
         .duration(500)
-        .attr(`c${axis}`, d => linearScale(axis, d));
+        .attr(`c${axis}`, d => scale(d[selected[axis]]));
 }
 
 function updateToolTip(circlesGroup) {
@@ -125,7 +125,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .call(d3.axisLeft(yScale));
 
     // Step 3: Initialize the circles
-    let circlesGroup = chartGroup.selectAll('circle')
+    const circlesGroup = chartGroup.selectAll('circle')
         .data(chartData)
         .enter()
         .append('circle')
@@ -135,7 +135,7 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .classed('stateCircle', true);
 
     // Step 4: Update tooltip
-    circlesGroup = updateToolTip(circlesGroup);
+    updateToolTip(circlesGroup);
 
     // Step 5: Initialize the axis labels
     // 5a: Create groups to hold them
@@ -182,13 +182,14 @@ d3.csv('./assets/data/data.csv').then((data) => {
             if (axis === 'x') {
                 xScale = linearScale('x', chartData);
                 renderAxis('x', xAxis, xScale);
+                renderCircles(circlesGroup, xScale, axis);
             }
             if (axis === 'y') {
                 yScale = linearScale('y', chartData);
                 renderAxis('y', yAxis, yScale);
+                renderCircles(circlesGroup, yScale, axis);
             }
-            // circlesGroup = renderCircles(circlesGroup, axis);
-            // circlesGroup = updateToolTip(circlesGroup);
+            updateToolTip(circlesGroup);
             chartGroup.select(`.${axis}-label-group`)
                 .selectAll('text')
                 .classed('active', false)
