@@ -53,13 +53,13 @@ function linearScale(axis, data) {
 
 function renderAxis(axis, axisObj, scale) {
     return axisObj.transition()
-        .duration(1000)
+        .duration(500)
         .call(axis === 'x' ? d3.axisBottom(scale) : d3.axisLeft(scale));
 }
 
 function renderCircles(circlesGroup, axis) {
     return circlesGroup.transition()
-        .duration(1000)
+        .duration(500)
         .attr(`c${axis}`, d => linearScale(axis, d));
 }
 
@@ -73,16 +73,23 @@ function updateToolTip(circlesGroup) {
         healthcare: ['Lacks Healthcare: ', '%'],
     };
     const toolTip = d3.tip()
-        .attr('class', 'tooltip')
+        .attr('class', 'd3-tip')
         .offset([80, -60])
-        .html((d) => `<h3>${d.state}</h3><hr>
-            <h4>${ttLabels[selected.x][0]}${d[selected.x]}${ttLabels[selected.x][1]}</h4>
-            <h4>${ttLabels[selected.y][0]}${d[selected.y]}${ttLabels[selected.y][1]}</h4>`);
+        .html((d) => {
+            return `${d.state}<br>
+            ${ttLabels[selected.x][0]}${d[selected.x]}${ttLabels[selected.x][1]}<br>
+            ${ttLabels[selected.y][0]}${d[selected.y]}${ttLabels[selected.y][1]}`
+        });
     circlesGroup
         .call(toolTip);
     circlesGroup
-        .on('mouseover', (data) => toolTip.show(data))
-        .on('mouseout', (data) => toolTip.hide(data));
+        .on('mouseover', function(data) {
+            toolTip.show(data, this)
+        })
+        .on('mouseout', function(data) {
+            toolTip.hide(data)
+        });
+    return circlesGroup;
 }
 
 // -----------------------------------------------------------------------------
@@ -118,17 +125,17 @@ d3.csv('./assets/data/data.csv').then((data) => {
         .call(d3.axisLeft(yScale));
 
     // Step 3: Initialize the circles
-    // let circlesGroup = chartGroup.selectAll('circle')
-    //     .data(chartData)
-    //     .enter()
-    //     .append('circle')
-    //     .attr('cx', d => linearScale('x', d))
-    //     .attr('cy', d => linearScale('y', d))
-    //     .attr('r', 5)
-    //     .classed('stateCircle', true);
-    //
-    // // Step 4: Update tooltip
-    // circlesGroup = updateToolTip(circlesGroup);
+    let circlesGroup = chartGroup.selectAll('circle')
+        .data(chartData)
+        .enter()
+        .append('circle')
+        .attr('cx', d => xScale(d[selected.x]))
+        .attr('cy', d => yScale(d[selected.y]))
+        .attr('r', 10)
+        .classed('stateCircle', true);
+
+    // Step 4: Update tooltip
+    circlesGroup = updateToolTip(circlesGroup);
 
     // Step 5: Initialize the axis labels
     // 5a: Create groups to hold them
@@ -146,10 +153,11 @@ d3.csv('./assets/data/data.csv').then((data) => {
                 .attr('y', (index + 1) * 20)
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])
+                .attr('id', `${label[0]}Label`)
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
-                // .on('click', clickHandler('x', label[0]));
+                .on('click', () => clickHandler('x', label[0]));
         });
     [['obesity', 'Obese (%)'], ['smokes', 'Smokes (%)'], ['healthcare', 'Lacks Healthcare (%)']]
         .forEach((label, index) => {
@@ -160,10 +168,11 @@ d3.csv('./assets/data/data.csv').then((data) => {
                 .attr('transform', 'rotate(-90)')
                 .attr('text-anchor', 'middle')
                 .attr('value', label[0])
+                .attr('id', `${label[0]}Label`)
                 .classed('active', !index)
                 .classed('inactive', index)
                 .text(label[1])
-                // .on('click', clickHandler('y', label[0]));
+                .on('click', () => clickHandler('y', label[0]));
         });
 
     // Step 6: Create the callback function for the click events (generic for x and y)
@@ -172,19 +181,19 @@ d3.csv('./assets/data/data.csv').then((data) => {
             selected[axis] = value;
             if (axis === 'x') {
                 xScale = linearScale('x', chartData);
-                xAxis = renderAxis('x', xAxis, xScale);
+                renderAxis('x', xAxis, xScale);
             }
             if (axis === 'y') {
                 yScale = linearScale('y', chartData);
-                yAxis = renderAxis('y', yAxis, yScale);
+                renderAxis('y', yAxis, yScale);
             }
-            circlesGroup = renderCircles(circlesGroup, axis);
-            circlesGroup = updateToolTip(circlesGroup);
+            // circlesGroup = renderCircles(circlesGroup, axis);
+            // circlesGroup = updateToolTip(circlesGroup);
             chartGroup.select(`.${axis}-label-group`)
                 .selectAll('text')
                 .classed('active', false)
                 .classed('inactive', true);
-            chartGroup.select(`#${value}`)
+            chartGroup.select(`#${value}Label`)
                 .classed('active', true)
                 .classed('inactive', false);
         }
